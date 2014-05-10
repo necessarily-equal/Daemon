@@ -31,28 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef COMMON_IPC_H_
 #define COMMON_IPC_H_
 
-#include <type_traits>
-#include <tuple>
-#include <array>
-#include <map>
-#include <set>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
-#include <string>
-#include "String.h"
-#include <limits>
-#include "Util.h"
-#include "Optional.h"
-#include "../engine/qcommon/q_shared.h"
-
 namespace IPC {
-
-// Maximum number of bytes that can be sent in a message
-const size_t MSG_MAX_BYTES = 128 << 10;
-
-// Maximum number of handles that can be sent in a message
-const size_t MSG_MAX_HANDLES = 8;
 
 // Operating system handle type
 #ifdef _WIN32

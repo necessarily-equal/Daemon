@@ -35,7 +35,6 @@ Maryland 20850 USA.
 // sv_game.c -- interface to the game module
 
 #include "server.h"
-#include "../../common/Cvar.h"
 #include "../qcommon/crypto.h"
 #include "../framework/CommonVMServices.h"
 
@@ -466,13 +465,15 @@ qboolean SV_GetTag( int clientNum, int tagFileNumber, const char *tagname, orien
 #endif
 }
 
-GameVM::GameVM(): VM::VMBase("game"), services(new VM::CommonVMServices(*this, "Game", Cmd::GAME))
+static VM::VMParams gameParams("game");
+
+GameVM::GameVM(): VM::VMBase("game", gameParams), services(new VM::CommonVMServices(*this, "Game", Cmd::GAME_VM))
 {
 }
 
 bool GameVM::Start()
 {
-    int version = this->Create( ( VM::vmType_t ) vm_game->integer );
+    int version = this->Create();
 
     if (version < 0)
     {
@@ -730,7 +731,7 @@ void GameVM::QVMSyscall(int index, IPC::Reader& reader, IPC::Channel& channel)
 
 	case G_SET_CONFIGSTRING_RESTRICTIONS:
 		IPC::HandleMsg<SetConfigStringRestrictionsMsg>(channel, std::move(reader), [this]() {
-			Com_Printf("SV_SetConfigstringRestrictions not implemented\n");
+			//Com_Printf("SV_SetConfigstringRestrictions not implemented\n");
 		});
 		break;
 
@@ -938,7 +939,7 @@ void GameVM::QVMSyscall(int index, IPC::Reader& reader, IPC::Channel& channel)
 		break;
 
 	case BOT_NAV_RANDOMPOINTRADIUS:
-		IPC::HandleMsg<BotNavRandomPointRadiusMsg>(channel, std::move(reader), [this](int clientNum, std::array<float, 3> origin, float radius, int res, std::array<float, 3>& point) {
+		IPC::HandleMsg<BotNavRandomPointRadiusMsg>(channel, std::move(reader), [this](int clientNum, std::array<float, 3> origin, float radius, int& res, std::array<float, 3>& point) {
 			res = BotFindRandomPointInRadius(clientNum, origin.data(), point.data(), radius);
 		});
 		break;
