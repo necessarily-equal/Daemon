@@ -36,11 +36,6 @@ Maryland 20850 USA.
 
 #include "cm_patch.h"
 
-// always use bbox vs. bbox collision and never capsule vs. bbox or vice versa
-//#define ALWAYS_BBOX_VS_BBOX
-// always use capsule vs. capsule collision and never capsule vs. bbox or vice versa
-//#define ALWAYS_CAPSULE_VS_CAPSULE
-
 Cvar::Cvar<bool> cm_noCurves(VM_STRING_PREFIX "cm_noCurves", "something in cm about curves?", Cvar::CHEAT, false);
 
 /*
@@ -549,7 +544,7 @@ CM_TestBoundingBoxInCapsule
 bounding box inside capsule check
 ==================
 */
-void CM_TestBoundingBoxInCapsule( traceWork_t *tw, clipHandle_t model )
+static void CM_TestBoundingBoxInCapsule( traceWork_t *tw, clipHandle_t model )
 {
 	vec3_t       mins, maxs, offset, size[ 2 ];
 	clipHandle_t h;
@@ -2201,36 +2196,21 @@ static void CM_Trace( trace_t *results, const vec3_t start, const vec3_t end, ve
 	{
 		if ( model )
 		{
-#ifdef ALWAYS_BBOX_VS_BBOX // FIXME - compile time flag?
-
-			if ( model == BOX_MODEL_HANDLE || model == CAPSULE_MODEL_HANDLE )
+			if ( model == CAPSULE_MODEL_HANDLE )
 			{
-				tw.type = TT_AABB;
-				CM_TestInLeaf( &tw, &cmod->leaf );
-			}
-			else
-#elif defined( ALWAYS_CAPSULE_VS_CAPSULE )
-			if ( model == BOX_MODEL_HANDLE || model == CAPSULE_MODEL_HANDLE )
-			{
-				CM_TestCapsuleInCapsule( &tw, model );
-			}
-			else
-#endif
-				if ( model == CAPSULE_MODEL_HANDLE )
+				if ( tw.type == traceType_t::TT_CAPSULE )
 				{
-					if ( tw.type == traceType_t::TT_CAPSULE )
-					{
-						CM_TestCapsuleInCapsule( &tw, model );
-					}
-					else
-					{
-						CM_TestBoundingBoxInCapsule( &tw, model );
-					}
+					CM_TestCapsuleInCapsule( &tw, model );
 				}
 				else
 				{
-					CM_TestInLeaf( &tw, &cmod->leaf );
+					CM_TestBoundingBoxInCapsule( &tw, model );
 				}
+			}
+			else
+			{
+				CM_TestInLeaf( &tw, &cmod->leaf );
+			}
 		}
 		else
 		{
@@ -2260,36 +2240,21 @@ static void CM_Trace( trace_t *results, const vec3_t start, const vec3_t end, ve
 		//
 		if ( model )
 		{
-#ifdef ALWAYS_BBOX_VS_BBOX
-
-			if ( model == BOX_MODEL_HANDLE || model == CAPSULE_MODEL_HANDLE )
+			if ( model == CAPSULE_MODEL_HANDLE )
 			{
-				tw.type = TT_AABB;
-				CM_TraceThroughLeaf( &tw, &cmod->leaf );
-			}
-			else
-#elif defined( ALWAYS_CAPSULE_VS_CAPSULE )
-			if ( model == BOX_MODEL_HANDLE || model == CAPSULE_MODEL_HANDLE )
-			{
-				CM_TraceCapsuleThroughCapsule( &tw, model );
-			}
-			else
-#endif
-				if ( model == CAPSULE_MODEL_HANDLE )
+				if ( tw.type == traceType_t::TT_CAPSULE )
 				{
-					if ( tw.type == traceType_t::TT_CAPSULE )
-					{
-						CM_TraceCapsuleThroughCapsule( &tw, model );
-					}
-					else
-					{
-						CM_TraceBoundingBoxThroughCapsule( &tw, model );
-					}
+					CM_TraceCapsuleThroughCapsule( &tw, model );
 				}
 				else
 				{
-					CM_TraceThroughLeaf( &tw, &cmod->leaf );
+					CM_TraceBoundingBoxThroughCapsule( &tw, model );
 				}
+			}
+			else
+			{
+				CM_TraceThroughLeaf( &tw, &cmod->leaf );
+			}
 		}
 		else
 		{
