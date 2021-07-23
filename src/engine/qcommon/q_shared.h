@@ -321,7 +321,7 @@ void  Com_Free_Aligned( void *ptr );
 	};
 
 #define NUMVERTEXNORMALS 162
-	extern vec3_t bytedirs[ NUMVERTEXNORMALS ];
+extern const vec3_t bytedirs[ NUMVERTEXNORMALS ];
 
 // all drawing is done to a 640*480 virtual screen size
 // and will be automatically scaled to the real resolution
@@ -347,10 +347,19 @@ void  Com_Free_Aligned( void *ptr );
 
 struct cplane_t;
 
-extern vec3_t   vec3_origin;
-extern vec3_t   axisDefault[ 3 ];
-extern matrix_t matrixIdentity;
-extern quat_t   quatIdentity;
+constexpr vec3_t vec3_origin = { 0, 0, 0 };
+constexpr vec3_t axisDefault[ 3 ] = { { 1, 0, 0 },
+                                      { 0, 1, 0 },
+                                      { 0, 0, 1 } };
+
+constexpr matrix_t matrixIdentity = {
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
+	};
+
+constexpr quat_t quatIdentity = { 0, 0, 0, 1 };
 
 #define nanmask ( 255 << 23 )
 
