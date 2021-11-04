@@ -70,7 +70,11 @@ OpaquePlayerState *SV_GameClientNum( int num )
 		Sys::Drop( "SV_GameClientNum: bad num" );
 	}
 
-	return ( OpaquePlayerState * )( ( byte * ) sv.gameClients + sv.gameClientSize * ( num ) );
+	static Log::Logger debugLog = Log::Logger("debug", "", Log::Level::NOTICE).WithoutSuppression();
+auto ptr = (OpaquePlayerState *)( (byte *) sv.gameClients + sv.gameClientSize * num );
+	debugLog.Warn("SV_GameClientNum: num: %i, %p", num, ptr);
+
+	return ptr;
 }
 
 svEntity_t     *SV_SvEntityForGentity( sharedEntity_t *gEnt )

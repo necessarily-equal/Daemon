@@ -1741,15 +1741,56 @@ using NetcodeTable = std::vector<netField_t>;
 union OpaquePlayerState {
 	byte storage[MAX_PLAYERSTATE_SIZE];
 	struct {
-		// These fields must be identical to ones at the start of playerState_t
-		vec3_t origin;
-		int ping; // shouldn't even be here?
-		int persistant[16];
-		int    viewheight;
-		int clientNum;
-		int   delta_angles[3]; // add to command angles to get view direction
-		vec3_t viewangles; // for fixed views
-		int    commandTime; // cmd->serverTime of last executed command
+	// the first group of fields must be identical to the ones in OpaquePlayerState
+	vec3_t origin;
+	int ping; // server to game info for scoreboard
+	int persistant[16];
+	int    viewheight;
+	int clientNum; // ranges from 0 to MAX_CLIENTS-1
+	int   delta_angles[ 3 ]; // add to command angles to get view direction
+	vec3_t viewangles; // for fixed views
+	int    commandTime; // cmd->serverTime of last executed command
+	// end of fields which must be identical to OpaquePlayerState
+
+	int    pm_type;
+	int    bobCycle; // for view bobbing and footstep generation
+	int    pm_flags; // ducked, jump_held, etc
+	int    pm_time;
+
+
+	vec3_t velocity;
+	int    weaponTime;
+	int    gravity;
+
+	int   speed;
+	// changed by spawns, rotating objects, and teleporters
+
+	int groundEntityNum; // ENTITYNUM_NONE = in air
+
+	int legsTimer; // don't change low priority animations until this runs out
+	int legsAnim; // mask off ANIM_TOGGLEBIT
+
+	int torsoTimer; // don't change low priority animations until this runs out
+	int torsoAnim; // mask off ANIM_TOGGLEBIT
+
+	int movementDir; // a number 0 to 7 that represents the relative angle
+	// of movement to the view angle (axial and diagonals)
+	// when at rest, the value will remain unchanged
+	// used to twist the legs during strafing
+
+	int eFlags; // copied to entityState_t->eFlags
+
+	int eventSequence; // pmove generated events
+	int events[ MAX_EVENTS ];
+	int eventParms[ MAX_EVENTS ];
+	int oldEventSequence; // so we can see which events have been added since we last converted to entityState_t
+
+	int externalEvent; // events set on player from another source
+	int externalEventParm;
+	int externalEventTime;
+
+	// weapon info
+	int weapon; // copied to entityState_t->weapon
 
 		// this is just for determining the size of the unnamed struct
 		int END;

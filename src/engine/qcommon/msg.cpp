@@ -1300,6 +1300,7 @@ static int qsort_playerstatefields( const void *a, const void *b )
 
 void MSG_PrioritisePlayerStateFields()
 {
+	static Log::Logger debug = Log::Logger("debug", "", Log::Level::NOTICE).WithoutSuppression();
 	std::vector<int> fieldorders(playerStateFields.size());
 
 	for ( size_t i = 0; i < fieldorders.size(); i++ )
@@ -1307,17 +1308,17 @@ void MSG_PrioritisePlayerStateFields()
 		fieldorders[ i ] = i;
 	}
 
-	qsort( &fieldorders[ 0 ], fieldorders.size(), sizeof( int ), qsort_playerstatefields );
+	qsort( &fieldorders[ 0 ], fieldorders.size(), sizeof( fieldorders[ 0 ] ), qsort_playerstatefields );
 
-	Log::Notice( "Playerstate fields in order of priority\n" );
-	Log::Notice( "netField_t playerStateFields[] = {\n" );
+	debug.Warn( "Playerstate fields in order of priority\n" );
+	debug.Warn( "netField_t playerStateFields[] = {\n" );
 
 	for ( size_t i = 0; i < fieldorders.size(); i++ )
 	{
-		Log::Notice( "{ PSF(%s), %i },\n", playerStateFields[ fieldorders[ i ] ].name, playerStateFields[ fieldorders[ i ] ].bits );
+		debug.Warn( "{ PSF(%s), %i },\n", playerStateFields[ fieldorders[ i ] ].name, playerStateFields[ fieldorders[ i ] ].bits );
 	}
 
-	Log::Notice( "};\n" );
+	debug.Warn( "};\n" );
 }
 
 // includes presence bit
@@ -1399,11 +1400,21 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, OpaquePlayerState *from, OpaquePlaye
 
 	lc = 0;
 
+	static Log::Logger debug = Log::Logger("debug", "", Log::Level::NOTICE).WithoutSuppression();
+
 	for ( int i = 0; i < numFields; i++ )
 	{
 		netField_t* field = &playerStateFields[i];
 		fromF = ( int * )( ( byte * ) from + field->offset );
 		toF = ( int * )( ( byte * ) to + field->offset );
+
+		if (field->name == "weapon")
+		{
+			if (*fromF != *toF)
+			{
+				debug.Notice("MSG_WriteDeltaPlayerstate (netcode): weapon changed: from %i to %i", *fromF, *toF);
+			}
+		}
 
 		if (field->bits == STATS_GROUP_FIELD
 			? memcmp(fromF, toF, sizeof(int) * STATS_GROUP_NUM_STATS)

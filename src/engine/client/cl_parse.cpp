@@ -171,13 +171,15 @@ cl.snap and saved in cl.snapshots[].  If the snapshot is invalid
 for any reason, no changes to the state will be made at all.
 ================
 */
+static Log::Logger debug = Log::Logger("debug", "", Log::Level::NOTICE).WithoutSuppression();
+
 void CL_ParseSnapshot( msg_t *msg )
 {
-	int          len;
-	clSnapshot_t *old;
-	int          deltaNum;
-	int          oldMessageNum;
-	int          i, packetNum;
+	int          len = 0;
+	clSnapshot_t *old = nullptr;
+	int          deltaNum = 0;
+	int          oldMessageNum = 0;
+	int          i = 0, packetNum = 0;
 
 	// get the reliable sequence acknowledge number
 	// NOTE: now sent with all server to client messages
@@ -217,6 +219,8 @@ void CL_ParseSnapshot( msg_t *msg )
 		newSnap.valid = true; // uncompressed frame
 		old = nullptr;
 
+		debug.Notice( "snapshot is a full frame" );
+
 		if ( clc.demorecording )
 		{
 			clc.demowaiting = false; // we can start recording now
@@ -235,17 +239,20 @@ void CL_ParseSnapshot( msg_t *msg )
 
 		if ( !old->valid )
 		{
+			//FIXME debug.Warn( "snapshot is an invalid delta frame");
 			// should never happen
-			Log::Notice( "Delta from invalid frame (not supposed to happen!).\n" );
+			Log::Warn( "CL_ParseSnapshot: Delta from invalid frame (not supposed to happen!).\n" );
 		}
 		else if ( old->messageNum != newSnap.deltaNum )
 		{
+			//FIXME debug.Warn( "snapshot is a delta to an obsolete delta frame");
 			// The frame that the server did the delta from
 			// is too old, so we can't reconstruct it properly.
 			Log::Debug( "Delta frame too old." );
 		}
 		else
 		{
+			//FIXME debug.Notice( "snapshot is a valid delta frame");
 			newSnap.valid = true; // valid delta parse
 		}
 	}

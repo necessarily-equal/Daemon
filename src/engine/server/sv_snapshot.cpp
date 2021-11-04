@@ -657,6 +657,59 @@ currently doesn't.
 For viewing through other player's eyes, clent can be something other than client->gentity
 =============
 */
+struct debug {
+	// the first group of fields must be identical to the ones in OpaquePlayerState
+	vec3_t origin;
+	int ping; // server to game info for scoreboard
+	int persistant[16];
+	int    viewheight;
+	int clientNum; // ranges from 0 to MAX_CLIENTS-1
+	int   delta_angles[ 3 ]; // add to command angles to get view direction
+	vec3_t viewangles; // for fixed views
+	int    commandTime; // cmd->serverTime of last executed command
+	// end of fields which must be identical to OpaquePlayerState
+
+	int    pm_type;
+	int    bobCycle; // for view bobbing and footstep generation
+	int    pm_flags; // ducked, jump_held, etc
+	int    pm_time;
+
+
+	vec3_t velocity;
+	int    weaponTime;
+	int    gravity;
+
+	int   speed;
+	// changed by spawns, rotating objects, and teleporters
+
+	int groundEntityNum; // ENTITYNUM_NONE = in air
+
+	int legsTimer; // don't change low priority animations until this runs out
+	int legsAnim; // mask off ANIM_TOGGLEBIT
+
+	int torsoTimer; // don't change low priority animations until this runs out
+	int torsoAnim; // mask off ANIM_TOGGLEBIT
+
+	int movementDir; // a number 0 to 7 that represents the relative angle
+	// of movement to the view angle (axial and diagonals)
+	// when at rest, the value will remain unchanged
+	// used to twist the legs during strafing
+
+	int eFlags; // copied to entityState_t->eFlags
+
+	int eventSequence; // pmove generated events
+	int events[ MAX_EVENTS ];
+	int eventParms[ MAX_EVENTS ];
+	int oldEventSequence; // so we can see which events have been added since we last converted to entityState_t
+
+	int externalEvent; // events set on player from another source
+	int externalEventParm;
+	int externalEventTime;
+
+	// weapon info
+	int weapon; // copied to entityState_t->weapon
+};
+
 static void SV_BuildClientSnapshot( client_t *client )
 {
 	vec3_t                  org;
@@ -696,6 +749,12 @@ static void SV_BuildClientSnapshot( client_t *client )
 	// never send client's own entity, because it can
 	// be regenerated from the playerstate
 	clientNum = frame->ps.clientNum;
+	static Log::Logger debugLog = Log::Logger("debug", "", Log::Level::NOTICE).WithoutSuppression();
+	debugLog.Warn("SV_BuildClientSnapshot: client %i, ptr: %p %p, weapon: %i",
+			clientNum,
+			&frame->ps,
+			&((struct debug *) &frame->ps )->weapon,
+			((struct debug *) &frame->ps )->weapon);
 
 	if ( clientNum < 0 || clientNum >= MAX_GENTITIES )
 	{
