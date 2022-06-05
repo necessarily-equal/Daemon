@@ -1083,7 +1083,11 @@ static void IN_ProcessEvents( bool dropInput )
 					{
 						Com_QueueEvent( Util::make_unique<Sys::MouseEvent>(e.motion.xrel, e.motion.yrel) );
 #if defined( __linux__ ) || defined( __BSD__ )
+#if SDL_COMPILEDVERSION != 2022 /*SDL-2.0.22*/ /*note this assumes the version of SDL daemon is compiled against is the same as the version it will be executed with.*/
 						if ( !in_nograb->integer && ( e.motion.xrel || e.motion.yrel ) )
+#else /* TODO(when debian stable has a version greater than SDL-2.0.22, remove this "else" branch */
+						if ( !in_nograb->integer )
+#endif
 						{
 							// work around X window managers and edge-based workspace flipping
 							// - without this, we get LeaveNotify, no mouse button events, EnterNotify;
