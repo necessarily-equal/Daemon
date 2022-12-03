@@ -156,7 +156,13 @@ qhandle_t RE_RegisterModel( const char *name )
 				loaded = R_LoadMD5( mod, buffer, name );
 			}
 			else if ( !Q_strnicmp( ( const char * ) buffer, "INTERQUAKEMODEL", 15 ) ) {
-				loaded = R_LoadIQModel( mod, buffer, bufferLen, name );
+				void *alignedBuffer = Com_Allocate_Aligned( sizeof(int)*8, bufferLen );
+				if ( alignedBuffer )
+				{
+					memcpy( alignedBuffer, buffer, bufferLen );
+					loaded = R_LoadIQModel( mod, buffer, bufferLen, name );
+					Com_Free_Aligned( alignedBuffer );
+				}
 			}
 
 			ri.FS_FreeFile( buffer );
