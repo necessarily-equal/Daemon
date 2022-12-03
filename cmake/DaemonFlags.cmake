@@ -27,8 +27,6 @@
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
-add_definitions(-DDAEMON_BUILD_${CMAKE_BUILD_TYPE})
-
 # Set flag without checking, optional argument specifies build type
 macro(set_c_flag FLAG)
     if (${ARGC} GREATER 1)
