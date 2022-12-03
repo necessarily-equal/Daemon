@@ -91,14 +91,14 @@ static bool LoadIQMFile( void *buffer, unsigned filesize, const char *mod_name,
 	iqmAnim_t		*anim;
 
 	if( filesize < sizeof(iqmHeader_t) ) {
-		Log::Warn("R_LoadIQModel: file size of %s is too small.",
+		Log::Warn("R_LoadIQMFile: file size of %s is too small.",
 			  mod_name );
 		return false;
 	}
 
 	header = (iqmHeader_t *)buffer;
 	if( Q_strncmp( header->magic, IQM_MAGIC, sizeof(header->magic) ) ) {
-		Log::Warn("R_LoadIQModel: file %s doesn't contain an IQM header.",
+		Log::Warn("R_LoadIQMFile: file %s doesn't contain an IQM header.",
 			  mod_name );
 		return false;
 	}
